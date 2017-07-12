@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Login Registration</title>
+  </head>
+  <body>
+    <% if(typeof(errors) != 'undefined' ) { %>
+     <% for (var x in errors) { %>
+      <h3><%= errors[x].message %></h3>
+     <% } %>
+     <% } %>
+    <h1>Registration</h1>
+    <form class="" action="/user/register" method="post">
+      <label>First Name: </label><input type="text" name="first_name" value="Sisu"><br>
+      <label>Last Name: </label><input type="text" name="last_name" value="Banjo"><br>
+      <label>Email: </label><input type="text" name="email" value="sisujo@gmail.com"><br>
+      <label for="">Birthday:</label><input type="date" name="birthday" value="1987-06-02"><br>
+      <label>Password: </label><input type="password" name="password" value="12345a$A"><br>
+      <label>Confirm Pw: </label><input type="password" name="confirm" value="12345a$A"><br>
+      <input type="submit" name="submit" value="Register"><br><br>
+    </form>
+    <h1>Login</h1>
+    <form class="" action="user/login" method="post">
+      <label>Email: </label><input type="text" name="email" value="sisujo@gmail.com"><br>
+      <label>Password: </label><input type="password" name="password" value="12345a$A"><br>
+      <input type="submit" name="submit" value="Login">
+    </form>
+
+  </body>
+</html>
