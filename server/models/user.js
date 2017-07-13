@@ -1,4 +1,5 @@
 var mongoose     = require('mongoose'),
+bcrypt = require('bcryptjs');
   Schema    = mongoose.Schema,
   UserSchema    = new mongoose.Schema({
     name:{
@@ -47,6 +48,17 @@ var mongoose     = require('mongoose'),
  }
 }
 ,{ timestamps: true } );
+UserSchema.pre('save',function(done){
+   if(!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,32}/.test(this.password)){
+      console.log("password matcher error")
+      user.errors['password_pattern']={message:"Password failed validation, you must have at least 1 number, uppercase and special character"}
+      user_erros=user.errors
+      res.redirect('/')
+      // res.render('index', {title: 'you have errors!', errors: user.errors})
+    }
+    this.password=bcrypt.hashSync(this.password, bcrypt.genSaltSync(8));
+    done()
+})
 UserSchema.virtual( 'name.full' ).get( function () {
   return this.name.first + " " + this.name.last;
 });

@@ -1,65 +1,81 @@
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
-var bcrypt = require('bcryptjs');
+bcrypt = require('bcryptjs');
+var user_errors;
 module.exports ={
-  status: false,
+  // if errors ,send errors
   index: function(req,res){
-      res.render('index')
+    req.session.status=false
+      res.render('index', {title: 'you have errors!', errors: user_errors})
+    },
+  show: function(req,res){
+    if (req.session.status){
+      res.render('show')
+    }
+    else{
+      res.redirect('/')
+    }
+      
     },
   register: function(req,res){
     let first_name= req.body.first_name,last_name=req.body.last_name,password=req.body.password,c_password=req.body.confirm,dob= req.body.birthday,email=req.body.email
     // console.log(first_name,last_name,dob,password,email)
-    let confirm_error={message:""}
+    var confirm_error=false;
     if (password!=c_password){
-      confirm_error['message']= "Password confirmation doesn't match"
-      res.render('index', {title: 'you have errors!', errors: [confirm_error]})
+      console.log("confirm error")
+      confirm_error=true
     }
-    else if(!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,32}/.test(password)){
-      console.log("password matcher error")
-      confirm_error['message']=  "Password failed validation, you must have at least 1 number, uppercase and special character"
-      res.render('index', {title: 'you have errors!', errors: [confirm_error]})
-    }
-    password=bcrypt.hashSync(password, bcrypt.genSaltSync(8));
     let user= new User ({password:password,dob: dob,email: email })
     user.name.first=first_name
     user.name.last=last_name
-    user.save(function(err){
+    user.validate(function(err){
+      let errors;
       if(err){
-        console.log("error name ++=",err)
-        let errors;
-        // console.log(err.name)
-        // console.log(user.errors)
-        if( user.errors==undefined&&err.name=="MongoError"){
-          errors=[{message: "User already exists"}]
-        }else{
-          errors=user.errors
+        if (confirm_error){
+          user.errors['confirm_error']={message: "Your passwords don't match"}
         }
-          res.render('index', {title: 'you have errors!', errors: errors })
+        user_errors=user.errors
+        res.redirect('/')
+        // res.render('index',{title: 'You have errors',errors: user.errors})
       }
-      else {
-          User.findOne({email:email},function(err,user){req.session.id=user.id})
-          this.status=true
-          res.render('show');
+      else{
+        user.save(function(err){
+          if (err&&err.name==='MongoError'){
+            console.log("Inside register error",err)
+            user_errors={email_errors:{message: "Why don't you try a different email?"}}
+            res.redirect('/')
+            // res.render('index',{title: 'You have errors',errors: {user_errors:{message: "Why don't you try a different email?"}}})
+          }
+          else{
+            req.session.status= true
+            req.session.user_id=user.id
+            res.redirect('/user/show')
+          }
+        })
       }
+       
     })
   },
   login:function(req,res){
     let password=req.body.password,email=req.body.email
     User.findOne({email:email},function(err,user){
-      console.log("USERRRRRRRRR_______",user);
-      req.session.id=user.id
-
-      if (err){
-        res.render('index', {title: 'you have errors!', errors: user.errors})
-      }else if(!user || !bcrypt.compareSync(password, user.password)){
-        res.render('index', {title: 'you have errors!', errors: [{message: "Email or password incorrect"}]})
+  
+      if(!user || !bcrypt.compareSync(password, user.password)){
+        user_errors=[{message: "Email or password incorrect"}]
+        res.redirect('/')
       }
       else{
-        res.render('show')
-        console.log('success')
+        req.session.status= true
+        req.session.user_id=user.id
+        res.redirect('/user/show')
       }
-      
 
     })
+  },
+  log_out: function(req,res){
+    req.session.destroy(function(err) {
+     console.log(err)
+  })
+    res.redirect('/')
   },
   }
