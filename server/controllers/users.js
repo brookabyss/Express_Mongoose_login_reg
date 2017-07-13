@@ -48,8 +48,8 @@ module.exports ={
           }
           else{
             req.session.status= true
-            req.session.id=user.id
-            res.redirect('/show')
+            req.session.user_id=user.id
+            res.redirect('/user/show')
           }
         })
       }
@@ -65,10 +65,17 @@ module.exports ={
         res.redirect('/')
       }
       else{
-        req.session.id=user.id
-        res.render('show')
+        req.session.status= true
+        req.session.user_id=user.id
+        res.redirect('/user/show')
       }
 
     })
+  },
+  log_out: function(req,res){
+    req.session.destroy(function(err) {
+     console.log(err)
+  })
+    res.redirect('/')
   },
   }
