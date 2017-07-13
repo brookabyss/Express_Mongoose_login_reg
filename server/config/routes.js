@@ -11,6 +11,9 @@ module.exports= function(app){
   app.post('/user/login', function(req, res) {
     users.login(req,res);
   })
+  app.get('/show', function(req,res){
+    users.show(req,res);
+  })
   // routes to redirect for to index page
   app.get('/user/register', function(req, res) {
     res.redirect('/')
@@ -18,5 +21,6 @@ module.exports= function(app){
   app.get('/user/login', function(req, res) {
     res.redirect('/')
   })
+  
 
 }
